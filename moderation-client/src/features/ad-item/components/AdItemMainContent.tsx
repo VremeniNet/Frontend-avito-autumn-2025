@@ -84,7 +84,6 @@ export const AdItemMainContent: React.FC<AdItemMainContentProps> = ({
 				spacing={2}
 				sx={{ mt: loading ? 2 : 0 }}
 			>
-				{/* Левая колонка: фото + описание */}
 				<Box sx={{ flex: 1.4, minWidth: 0 }}>
 					<Card
 						variant='outlined'
@@ -248,7 +247,6 @@ export const AdItemMainContent: React.FC<AdItemMainContentProps> = ({
 					</Card>
 				</Box>
 
-				{/* Правая колонка: продавец, статистика, история */}
 				<Box sx={{ flex: 1, minWidth: 280 }}>
 					<Card variant='outlined' sx={{ mb: 2 }}>
 						<CardHeader

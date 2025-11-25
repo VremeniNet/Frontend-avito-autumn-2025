@@ -45,8 +45,6 @@ export const getAds = async (
 	return response.data as AdsListResponse
 }
 
-// ------- детальная карточка --------
-
 export const getAdDetails = async (
 	id: number
 ): Promise<AdvertisementDetails> => {

@@ -29,34 +29,28 @@ interface CategoryOption {
 }
 
 interface ListFiltersProps {
-	// поиск
 	searchInput: string
 	onSearchInputChange: (value: string) => void
 	onSearchApply: () => void
 	searchInputRef?: React.RefObject<HTMLInputElement>
 
-	// статус (множественный выбор)
 	statusFilter: ModerationStatus[]
 	onStatusFilterChange: (statuses: ModerationStatus[]) => void
 
-	// категория
 	categoryId: number | 'all'
 	availableCategories: CategoryOption[]
 	onCategoryChange: (category: number | 'all') => void
 
-	// диапазон цен
 	minPrice: string
 	maxPrice: string
 	onMinPriceChange: (value: string) => void
 	onMaxPriceChange: (value: string) => void
 
-	// сортировка
 	sortBy: SortField
 	sortOrder: SortOrder
 	onSortByChange: (field: SortField) => void
 	onSortOrderToggle: () => void
 
-	// сброс
 	onReset: () => void
 }
 
@@ -87,7 +81,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 		onReset,
 	} = props
 
-	// множественный выбор статусов
 	const handleStatusChange = (
 		event: SelectChangeEvent<typeof statusFilter>
 	) => {
@@ -100,7 +93,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 		onStatusFilterChange(next)
 	}
 
-	// смена категории
 	const handleCategoryChange = (event: SelectChangeEvent<string>) => {
 		const value = event.target.value
 		if (value === 'all') {

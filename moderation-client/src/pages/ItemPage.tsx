@@ -39,7 +39,6 @@ export const ItemPage: React.FC = () => {
 		reloadHistory,
 	} = useAdItem(Number.isFinite(adId) ? adId : null)
 
-	// Горячие клавиши
 	React.useEffect(() => {
 		const handler = (event: KeyboardEvent) => {
 			const target = event.target as HTMLElement | null
@@ -119,7 +118,6 @@ export const ItemPage: React.FC = () => {
 				onRequestChanges={() => void requestChanges()}
 			/>
 
-			{/* Навигация по ID */}
 			<Stack direction='row' justifyContent='space-between' alignItems='center'>
 				<Button
 					startIcon={<ArrowBackIosNewIcon />}
