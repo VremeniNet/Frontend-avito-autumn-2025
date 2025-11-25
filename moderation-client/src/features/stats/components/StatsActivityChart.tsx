@@ -21,7 +21,6 @@ export const StatsActivityChart: React.FC<StatsActivityChartProps> = ({
 			? 'последние 7 дней'
 			: 'последние 30 дней'
 
-	// если точек много, включаем горизонтальный скролл
 	const hasManyPoints = activity.length > 16
 
 	return (
@@ -36,22 +35,18 @@ export const StatsActivityChart: React.FC<StatsActivityChartProps> = ({
 				больше всего объявлений.
 			</Typography>
 
-			{/* Внешняя обёртка, которая не даёт графику раздувать страницу по ширине */}
 			<Box
 				sx={{
 					width: '100%',
 					overflowX: hasManyPoints ? 'auto' : 'visible',
 				}}
 			>
-				{/* Внутренняя «лента» со столбиками */}
 				<Box
 					sx={{
 						display: 'flex',
 						alignItems: 'flex-end',
 						height: 180,
 						gap: 1.5,
-						// если столбиков много — делаем ленту шире карточки,
-						// если мало — просто растягиваем на 100%
 						minWidth: hasManyPoints ? `${activity.length * 32}px` : '100%',
 						pr: hasManyPoints ? 2 : 0,
 					}}
@@ -67,7 +62,7 @@ export const StatsActivityChart: React.FC<StatsActivityChartProps> = ({
 									flexDirection: 'column',
 									alignItems: 'center',
 									justifyContent: 'flex-end',
-									flex: '0 0 24px', // фиксированная ширина столбика
+									flex: '0 0 24px',
 									height: '100%',
 								}}
 							>

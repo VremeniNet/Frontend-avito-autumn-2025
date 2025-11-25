@@ -1,4 +1,5 @@
 import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getAds } from '../../shared/api/adsApi.ts'
 import {
 	PAGE_LIMIT,
@@ -15,6 +16,7 @@ export interface UseAdsListState {
 	pagination: PaginationInfo | null
 	loading: boolean
 	error: string | null
+
 	page: number
 	statusFilter: ModerationStatus[]
 	categoryId: number | 'all'
@@ -38,19 +40,13 @@ export interface UseAdsListApi {
 	setSearchInput: (v: string) => void
 	applySearch: () => void
 	resetFilters: () => void
+
 	goToNext: () => void
 	goToPrev: () => void
 	openIndex: (idx: number) => void
 }
 
 export const useAdsList = (): [UseAdsListState, UseAdsListApi] => {
-	const [ads, setAds] = React.useState<Advertisement[]>([])
-	const [pagination, setPagination] = React.useState<PaginationInfo | null>(
-		null
-	)
-	const [loading, setLoading] = React.useState(false)
-	const [error, setError] = React.useState<string | null>(null)
-
 	const [page, setPage] = React.useState(1)
 	const [statusFilter, setStatusFilter] = React.useState<ModerationStatus[]>([
 		'pending',
@@ -64,12 +60,27 @@ export const useAdsList = (): [UseAdsListState, UseAdsListApi] => {
 	const [search, setSearch] = React.useState('')
 	const [selectedIndex, setSelectedIndex] = React.useState(0)
 
-	const fetchAds = React.useCallback(async () => {
-		setLoading(true)
-		setError(null)
-
-		try {
-			const data = await getAds({
+	const {
+		data,
+		isLoading,
+		isFetching,
+		error: queryError,
+	} = useQuery({
+		queryKey: [
+			'ads',
+			{
+				page,
+				statusFilter,
+				categoryId,
+				minPrice,
+				maxPrice,
+				sortBy,
+				sortOrder,
+				search,
+			},
+		],
+		queryFn: () =>
+			getAds({
 				page,
 				limit: PAGE_LIMIT,
 				status: statusFilter.length ? statusFilter : undefined,
@@ -79,17 +90,13 @@ export const useAdsList = (): [UseAdsListState, UseAdsListApi] => {
 				sortBy,
 				sortOrder,
 				search: search || undefined,
-			})
+			}),
+		staleTime: 30_000,
+		refetchOnWindowFocus: false,
+	})
 
-			setAds(data.ads)
-			setPagination(data.pagination)
-			setSelectedIndex(0)
-		} catch (e) {
-			console.error(e)
-			setError('Не удалось загрузить объявления. Попробуйте обновить позже.')
-		} finally {
-			setLoading(false)
-		}
+	React.useEffect(() => {
+		setSelectedIndex(0)
 	}, [
 		page,
 		statusFilter,
@@ -101,9 +108,12 @@ export const useAdsList = (): [UseAdsListState, UseAdsListApi] => {
 		search,
 	])
 
-	React.useEffect(() => {
-		fetchAds()
-	}, [fetchAds])
+	const ads = data?.ads ?? []
+	const pagination = data?.pagination ?? null
+	const loading = isLoading || isFetching
+	const error = queryError
+		? 'Не удалось загрузить объявления. Попробуйте обновить позже.'
+		: null
 
 	const applySearch = () => {
 		setPage(1)
@@ -111,27 +121,35 @@ export const useAdsList = (): [UseAdsListState, UseAdsListApi] => {
 	}
 
 	const resetFilters = () => {
+		setPage(1)
 		setStatusFilter(['pending'])
 		setCategoryId('all')
 		setMinPrice('')
 		setMaxPrice('')
 		setSortBy('createdAt')
 		setSortOrder('desc')
-		setSearch('')
 		setSearchInput('')
-		setPage(1)
+		setSearch('')
+		setSelectedIndex(0)
 	}
 
 	const goToNext = () => {
-		setSelectedIndex(prev => Math.min(prev + 1, Math.max(ads.length - 1, 0)))
+		setSelectedIndex(prev => {
+			if (ads.length === 0) return 0
+			return Math.min(prev + 1, ads.length - 1)
+		})
 	}
 
 	const goToPrev = () => {
-		setSelectedIndex(prev => Math.max(prev - 1, 0))
+		setSelectedIndex(prev => {
+			if (ads.length === 0) return 0
+			return Math.max(prev - 1, 0)
+		})
 	}
 
 	const openIndex = (idx: number) => {
-		setSelectedIndex(Math.max(0, Math.min(idx, Math.max(ads.length - 1, 0))))
+		if (idx < 0 || idx >= ads.length) return
+		setSelectedIndex(idx)
 	}
 
 	return [

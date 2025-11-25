@@ -1,4 +1,5 @@
 import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type {
 	PeriodKey,
 	StatsSnapshot,
@@ -29,40 +30,15 @@ const DEFAULT_DECISIONS: DecisionsDistribution = {
 
 export const useStats = (): UseStatsResult => {
 	const [period, setPeriod] = React.useState<PeriodKey>('7d')
-	const [snapshot, setSnapshot] = React.useState<StatsSnapshot | null>(null)
-	const [isLoading, setIsLoading] = React.useState(false)
-	const [error, setError] = React.useState<string | null>(null)
 
-	React.useEffect(() => {
-		let cancelled = false
+	const { data, isLoading, error } = useQuery<StatsSnapshot, Error>({
+		queryKey: ['stats', period],
+		queryFn: () => fetchStatsSnapshot(period),
+		staleTime: 60_000,
+		refetchOnWindowFocus: false,
+	})
 
-		const load = async () => {
-			try {
-				setIsLoading(true)
-				setError(null)
-				const data = await fetchStatsSnapshot(period)
-				if (!cancelled) {
-					setSnapshot(data)
-				}
-			} catch (e) {
-				console.error(e)
-				if (!cancelled) {
-					setError('Не удалось загрузить статистику')
-					setSnapshot(null)
-				}
-			} finally {
-				if (!cancelled) {
-					setIsLoading(false)
-				}
-			}
-		}
-
-		void load()
-
-		return () => {
-			cancelled = true
-		}
-	}, [period])
+	const snapshot = data ?? null
 
 	const summary = snapshot?.summary ?? DEFAULT_SUMMARY
 	const activity = snapshot?.activity ?? []
@@ -73,7 +49,7 @@ export const useStats = (): UseStatsResult => {
 		period,
 		setPeriod,
 		isLoading,
-		error,
+		error: error ? 'Не удалось загрузить статистику' : null,
 		summary,
 		activity,
 		decisions,

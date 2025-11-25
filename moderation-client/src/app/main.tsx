@@ -3,8 +3,18 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import type { PaletteMode } from '@mui/material'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import { ColorModeContext, createAppTheme } from './theme.ts'
+
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime: 30_000,
+			refetchOnWindowFocus: false,
+		},
+	},
+})
 
 const Root: React.FC = () => {
 	const [mode, setMode] = React.useState<PaletteMode>(() => {
@@ -35,9 +45,11 @@ const Root: React.FC = () => {
 		<ColorModeContext.Provider value={colorMode}>
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
-				<BrowserRouter>
-					<App />
-				</BrowserRouter>
+				<QueryClientProvider client={queryClient}>
+					<BrowserRouter>
+						<App />
+					</BrowserRouter>
+				</QueryClientProvider>
 			</ThemeProvider>
 		</ColorModeContext.Provider>
 	)

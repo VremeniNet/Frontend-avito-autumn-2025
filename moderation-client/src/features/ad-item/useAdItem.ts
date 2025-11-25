@@ -1,30 +1,30 @@
 import React from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
 	AdvertisementDetails,
 	ModerationHistoryItem,
 	RejectReasonCode,
 } from '../../shared/types/ads'
 import { REJECT_REASON_LABELS } from '../../shared/types/ads.ts'
-
 import {
 	approveAd,
 	getAdDetails,
 	rejectAd,
 	requestAdChanges,
 } from '../../shared/api/adsApi'
+import type { RejectAdPayload } from '../../shared/api/adsApi'
 
 export interface UseAdItemResult {
 	ad: AdvertisementDetails | null
 	history: ModerationHistoryItem[]
 	loading: boolean
 	historyLoading: boolean
+	actionLoading: boolean
 	error: string | null
 	setError: (value: string | null) => void
 
-	actionLoading: boolean
-
 	activeImageIndex: number
-	setActiveImageIndex: (index: number) => void
+	setActiveImageIndex: (idx: number) => void
 
 	rejectDialogOpen: boolean
 	rejectReasons: RejectReasonCode[]
@@ -42,12 +42,11 @@ export interface UseAdItemResult {
 }
 
 export const useAdItem = (adId: number | null): UseAdItemResult => {
-	const [ad, setAd] = React.useState<AdvertisementDetails | null>(null)
-	const [history, setHistory] = React.useState<ModerationHistoryItem[]>([])
-	const [loading, setLoading] = React.useState(false)
-	const [historyLoading, setHistoryLoading] = React.useState(false)
+	const queryClient = useQueryClient()
+
 	const [error, setError] = React.useState<string | null>(null)
 	const [actionLoading, setActionLoading] = React.useState(false)
+	const [historyLoading, setHistoryLoading] = React.useState(false)
 
 	const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false)
 	const [rejectReasons, setRejectReasons] = React.useState<RejectReasonCode[]>(
@@ -67,49 +66,52 @@ export const useAdItem = (adId: number | null): UseAdItemResult => {
 		[]
 	)
 
-	const loadAd = React.useCallback(async () => {
-		if (!adId || !Number.isFinite(adId)) {
+	const isValidId = adId != null && Number.isFinite(adId)
+
+	const {
+		data,
+		isLoading,
+		error: loadError,
+		refetch,
+	} = useQuery<AdvertisementDetails, Error>({
+		queryKey: ['ad', adId],
+		enabled: isValidId,
+		queryFn: () => getAdDetails(adId as number),
+		staleTime: 30_000,
+		refetchOnWindowFocus: false,
+	})
+
+	React.useEffect(() => {
+		if (!isValidId) {
 			setError('Некорректный идентификатор объявления')
 			return
 		}
-
-		setLoading(true)
-		setError(null)
-
-		try {
-			const data = await getAdDetails(adId)
-			setAd(data)
-			setActiveImageIndex(0)
-
-			const historyList = data.moderationHistory ?? []
-			setHistory(sortHistory(historyList))
-		} catch (err) {
-			console.error(err)
+		if (loadError) {
+			console.error(loadError)
 			setError('Не удалось загрузить объявление. Попробуйте позже.')
-		} finally {
-			setLoading(false)
 		}
-	}, [adId, sortHistory])
+	}, [isValidId, loadError])
+
+	React.useEffect(() => {
+		setActiveImageIndex(0)
+	}, [adId])
+
+	const ad = data ?? null
+	const history = data?.moderationHistory
+		? sortHistory(data.moderationHistory)
+		: []
 
 	const reloadHistory = React.useCallback(async () => {
-		if (!adId || !Number.isFinite(adId)) return
-
+		if (!isValidId) return
 		setHistoryLoading(true)
 		try {
-			const data = await getAdDetails(adId)
-			const historyList = data.moderationHistory ?? []
-			setHistory(sortHistory(historyList))
-		} catch (err) {
-			console.error(err)
+			await refetch()
+		} catch (e) {
+			console.error(e)
 		} finally {
 			setHistoryLoading(false)
 		}
-	}, [adId, sortHistory])
-
-	React.useEffect(() => {
-		if (!adId || !Number.isFinite(adId)) return
-		void loadAd()
-	}, [adId, loadAd])
+	}, [isValidId, refetch])
 
 	const toggleRejectReason = (code: RejectReasonCode) => {
 		setRejectReasons(prev =>
@@ -127,13 +129,18 @@ export const useAdItem = (adId: number | null): UseAdItemResult => {
 	}
 
 	const approve = React.useCallback(async () => {
-		if (!ad || actionLoading) return
+		if (!ad || actionLoading || !isValidId) return
 		setActionLoading(true)
 		setError(null)
 
 		try {
 			await approveAd(ad.id)
-			setAd(prev => (prev ? { ...prev, status: 'approved' } : prev))
+
+			queryClient.setQueryData<AdvertisementDetails | undefined>(
+				['ad', adId],
+				prev => (prev ? { ...prev, status: 'approved' } : prev)
+			)
+
 			void reloadHistory()
 		} catch (err) {
 			console.error(err)
@@ -141,10 +148,10 @@ export const useAdItem = (adId: number | null): UseAdItemResult => {
 		} finally {
 			setActionLoading(false)
 		}
-	}, [ad, actionLoading, reloadHistory])
+	}, [ad, actionLoading, isValidId, queryClient, adId, reloadHistory])
 
 	const confirmReject = React.useCallback(async () => {
-		if (!ad || actionLoading) return
+		if (!ad || actionLoading || !isValidId) return
 
 		const trimmedComment = rejectComment.trim()
 		const hasText = trimmedComment.length > 0
@@ -159,20 +166,27 @@ export const useAdItem = (adId: number | null): UseAdItemResult => {
 			? trimmedComment
 			: rejectReasons.map(code => REJECT_REASON_LABELS[code]).join(', ')
 
+		const payload: RejectAdPayload = {
+			reason: REJECT_REASON_LABELS[primaryReason],
+			comment: commentToSend || undefined,
+		}
+
 		setActionLoading(true)
 		setError(null)
 
 		try {
-			await rejectAd(ad.id, {
-				reason: REJECT_REASON_LABELS[primaryReason],
-				comment: commentToSend || undefined,
-			})
+			await rejectAd(ad.id, payload)
 
-			setAd(prev => (prev ? { ...prev, status: 'rejected' } : prev))
-			setRejectDialogOpen(false)
+			queryClient.setQueryData<AdvertisementDetails | undefined>(
+				['ad', adId],
+				prev => (prev ? { ...prev, status: 'rejected' } : prev)
+			)
+
 			setRejectComment('')
 			setRejectReasons([])
 			setRejectTouched(false)
+			setRejectDialogOpen(false)
+
 			void reloadHistory()
 		} catch (err) {
 			console.error(err)
@@ -180,10 +194,19 @@ export const useAdItem = (adId: number | null): UseAdItemResult => {
 		} finally {
 			setActionLoading(false)
 		}
-	}, [ad, actionLoading, rejectComment, rejectReasons, reloadHistory])
+	}, [
+		ad,
+		actionLoading,
+		isValidId,
+		rejectComment,
+		rejectReasons,
+		queryClient,
+		adId,
+		reloadHistory,
+	])
 
 	const requestChanges = React.useCallback(async () => {
-		if (!ad || actionLoading) return
+		if (!ad || actionLoading || !isValidId) return
 
 		const comment =
 			rejectComment ||
@@ -195,7 +218,11 @@ export const useAdItem = (adId: number | null): UseAdItemResult => {
 		try {
 			await requestAdChanges(ad.id, { comment })
 
-			setAd(prev => (prev ? { ...prev, status: 'pending' } : prev))
+			queryClient.setQueryData<AdvertisementDetails | undefined>(
+				['ad', adId],
+				prev => (prev ? { ...prev, status: 'pending' } : prev)
+			)
+
 			setRejectComment('')
 			void reloadHistory()
 		} catch (err) {
@@ -204,16 +231,24 @@ export const useAdItem = (adId: number | null): UseAdItemResult => {
 		} finally {
 			setActionLoading(false)
 		}
-	}, [ad, actionLoading, rejectComment, reloadHistory])
+	}, [
+		ad,
+		actionLoading,
+		isValidId,
+		rejectComment,
+		queryClient,
+		adId,
+		reloadHistory,
+	])
 
 	return {
 		ad,
 		history,
-		loading,
+		loading: isLoading,
 		historyLoading,
+		actionLoading,
 		error,
 		setError,
-		actionLoading,
 		activeImageIndex,
 		setActiveImageIndex,
 		rejectDialogOpen,
