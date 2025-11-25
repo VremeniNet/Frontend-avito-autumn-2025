@@ -1,9 +1,10 @@
 import axios from 'axios'
 import type {
 	Advertisement,
+	AdvertisementDetails,
 	PaginationInfo,
 	ModerationStatus,
-} from '../types/ads'
+} from '../types/ads.ts'
 
 export interface AdsListParams {
 	page: number
@@ -42,4 +43,40 @@ export const getAds = async (
 	})
 
 	return response.data as AdsListResponse
+}
+
+// ------- детальная карточка --------
+
+export const getAdDetails = async (
+	id: number
+): Promise<AdvertisementDetails> => {
+	const response = await axios.get(`/api/v1/ads/${id}`)
+	return response.data as AdvertisementDetails
+}
+
+export const approveAd = async (id: number): Promise<void> => {
+	await axios.post(`/api/v1/ads/${id}/approve`)
+}
+
+export interface RejectAdPayload {
+	reason: string
+	comment?: string
+}
+
+export const rejectAd = async (
+	id: number,
+	payload: RejectAdPayload
+): Promise<void> => {
+	await axios.post(`/api/v1/ads/${id}/reject`, payload)
+}
+
+export interface RequestChangesPayload {
+	comment: string
+}
+
+export const requestAdChanges = async (
+	id: number,
+	payload: RequestChangesPayload
+): Promise<void> => {
+	await axios.post(`/api/v1/ads/${id}/request-changes`, payload)
 }

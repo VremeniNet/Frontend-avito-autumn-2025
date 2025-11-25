@@ -16,7 +16,7 @@ import ListAltIcon from '@mui/icons-material/ListAlt'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
-import { ColorModeContext } from '../../theme'
+import { ColorModeContext } from '../../app/theme.ts'
 
 type Props = {
 	children: React.ReactNode

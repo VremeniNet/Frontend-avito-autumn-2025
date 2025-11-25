@@ -1,11 +1,11 @@
 import React from 'react'
-import { getAds } from '../../shared/api/adsApi'
+import { getAds } from '../../shared/api/adsApi.ts'
 import {
 	PAGE_LIMIT,
 	type Advertisement,
 	type PaginationInfo,
 	type ModerationStatus,
-} from '../../shared/types/ads'
+} from '../../shared/types/ads.ts'
 
 export type SortField = 'createdAt' | 'price' | 'priority'
 export type SortOrder = 'asc' | 'desc'

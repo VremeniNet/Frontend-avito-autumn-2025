@@ -13,11 +13,11 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { useNavigate } from 'react-router-dom'
 
-import { useAdsList } from '../features/ads-list/useAdsList'
-import { ListFilters } from '../features/ads-list/components/ListFilters'
-import { AdsList } from '../features/ads-list/components/AdsList'
-import { ListHotkeysHint } from '../features/ads-list/components/ListHotkeysHint'
-import type { Advertisement } from '../shared/types/ads'
+import { useAdsList } from '../features/ads-list/useAdsList.ts'
+import { ListFilters } from '../features/ads-list/components/ListFilters.tsx'
+import { AdsList } from '../features/ads-list/components/AdsList.tsx'
+import { ListHotkeysHint } from '../features/ads-list/components/ListHotkeysHint.tsx'
+import type { Advertisement } from '../shared/types/ads.ts'
 
 export const ListPage: React.FC = () => {
 	const [state, api] = useAdsList()

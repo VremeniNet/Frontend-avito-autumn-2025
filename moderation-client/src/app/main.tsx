@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import type { PaletteMode } from '@mui/material'
 import App from './App'
-import { ColorModeContext, createAppTheme } from './theme'
+import { ColorModeContext, createAppTheme } from './theme.ts'
 
 const Root: React.FC = () => {
 	const [mode, setMode] = React.useState<PaletteMode>(() => {

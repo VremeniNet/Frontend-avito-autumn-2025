@@ -1,9 +1,9 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { AppLayout } from './components/layout/AppLayout'
-import { ListPage } from './pages/ListPage.tsx'
-import { ItemPage } from './pages/ItemPage.tsx'
-import { StatsPage } from './pages/StatsPage.tsx'
+import { AppLayout } from './layout/AppLayout.tsx'
+import { ListPage } from '../pages/ListPage.tsx'
+import { ItemPage } from '../pages/ItemPage.tsx'
+import { StatsPage } from '../pages/StatsPage.tsx'
 
 const App: React.FC = () => {
 	return (
