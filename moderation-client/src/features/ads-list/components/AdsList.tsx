@@ -89,7 +89,6 @@ export const AdsList: React.FC<AdsListProps> = ({
 								gap: 2,
 							}}
 						>
-							{/* левая колонка — превью */}
 							<Box
 								sx={{
 									width: 64,
@@ -107,7 +106,6 @@ export const AdsList: React.FC<AdsListProps> = ({
 								</Avatar>
 							</Box>
 
-							{/* центр — текстовая часть */}
 							<Box sx={{ flex: 1, minWidth: 0 }}>
 								<Typography variant='subtitle1' noWrap>
 									{ad.title}
@@ -148,7 +146,6 @@ export const AdsList: React.FC<AdsListProps> = ({
 								</Stack>
 							</Box>
 
-							{/* правая колонка — кнопка "Открыть" */}
 							<Box
 								sx={{ display: 'flex', alignItems: 'center' }}
 								onClick={e => e.stopPropagation()}

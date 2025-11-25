@@ -128,7 +128,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 				alignItems: { xs: 'stretch', md: 'center' },
 			}}
 		>
-			{/* Поиск по названию */}
 			<TextField
 				fullWidth
 				size='small'
@@ -156,7 +155,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 				}}
 			/>
 
-			{/* Остальные фильтры */}
 			<Stack
 				direction='row'
 				spacing={2}
@@ -164,7 +162,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 				justifyContent={{ xs: 'flex-start', md: 'flex-end' }}
 				sx={{ mt: { xs: 1.5, md: 0 }, rowGap: 2 }}
 			>
-				{/* Статус (множественный выбор) */}
 				<FormControl size='small' sx={{ minWidth: 190 }}>
 					<InputLabel id='status-label'>Статус</InputLabel>
 					<Select
@@ -188,7 +185,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 					</Select>
 				</FormControl>
 
-				{/* Категория */}
 				<FormControl size='small' sx={{ minWidth: 180 }}>
 					<InputLabel id='category-label'>Категория</InputLabel>
 					<Select<string>
@@ -206,7 +202,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 					</Select>
 				</FormControl>
 
-				{/* Диапазон цен */}
 				<Stack direction='row' spacing={1} alignItems='center'>
 					<TextField
 						size='small'
@@ -228,7 +223,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 					/>
 				</Stack>
 
-				{/* Сортировка */}
 				<FormControl size='small' sx={{ minWidth: 140 }}>
 					<InputLabel id='sort-label'>Сортировка</InputLabel>
 					<Select
@@ -243,7 +237,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 					</Select>
 				</FormControl>
 
-				{/* Направление сортировки */}
 				<IconButton
 					size='small'
 					onClick={onSortOrderToggle}
@@ -257,7 +250,6 @@ export const ListFilters: React.FC<ListFiltersProps> = props => {
 					{sortOrder === 'asc' ? '↑' : '↓'}
 				</IconButton>
 
-				{/* Сброс */}
 				<Button
 					size='small'
 					variant='outlined'
