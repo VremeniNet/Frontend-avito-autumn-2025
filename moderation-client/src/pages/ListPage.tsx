@@ -56,7 +56,6 @@ export const ListPage: React.FC = () => {
 		openIndex,
 	} = api
 
-	// Список категорий
 	const availableCategories = React.useMemo(() => {
 		const map = new Map<number, string>()
 		ads.forEach((ad: Advertisement) => {
@@ -69,7 +68,6 @@ export const ListPage: React.FC = () => {
 		)
 	}, [ads])
 
-	// Открыть объявление
 	const handleOpenAd = React.useCallback(
 		(index: number) => {
 			const ad = ads[index]
@@ -79,7 +77,6 @@ export const ListPage: React.FC = () => {
 		[ads, navigate]
 	)
 
-	// Горячие клавиши
 	React.useEffect(() => {
 		const handler = (event: KeyboardEvent) => {
 			const target = event.target as HTMLElement | null

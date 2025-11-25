@@ -21,6 +21,9 @@ export const StatsActivityChart: React.FC<StatsActivityChartProps> = ({
 			? 'последние 7 дней'
 			: 'последние 30 дней'
 
+	// если точек много, включаем горизонтальный скролл
+	const hasManyPoints = activity.length > 16
+
 	return (
 		<Paper sx={{ p: 2 }}>
 			<Stack direction='row' justifyContent='space-between' mb={1}>
@@ -33,48 +36,62 @@ export const StatsActivityChart: React.FC<StatsActivityChartProps> = ({
 				больше всего объявлений.
 			</Typography>
 
+			{/* Внешняя обёртка, которая не даёт графику раздувать страницу по ширине */}
 			<Box
 				sx={{
-					display: 'flex',
-					alignItems: 'flex-end',
-					gap: 1.5,
-					height: 180,
+					width: '100%',
+					overflowX: hasManyPoints ? 'auto' : 'visible',
 				}}
 			>
-				{activity.map(point => {
-					const height = normalizeToPercent(point.value, activityMax)
-					return (
-						<Box
-							key={point.dayLabel}
-							sx={{
-								display: 'flex',
-								flexDirection: 'column',
-								alignItems: 'center',
-								justifyContent: 'flex-end',
-								flex: 1,
-								height: '100%',
-							}}
-						>
+				{/* Внутренняя «лента» со столбиками */}
+				<Box
+					sx={{
+						display: 'flex',
+						alignItems: 'flex-end',
+						height: 180,
+						gap: 1.5,
+						// если столбиков много — делаем ленту шире карточки,
+						// если мало — просто растягиваем на 100%
+						minWidth: hasManyPoints ? `${activity.length * 32}px` : '100%',
+						pr: hasManyPoints ? 2 : 0,
+					}}
+				>
+					{activity.map(point => {
+						const height = normalizeToPercent(point.value, activityMax)
+
+						return (
 							<Box
+								key={point.dayLabel}
 								sx={{
-									width: '100%',
-									maxWidth: 32,
-									height: `${Math.max(height, 8)}%`,
-									borderRadius: 1,
-									bgcolor: 'success.main',
-									opacity: 0.8,
+									display: 'flex',
+									flexDirection: 'column',
+									alignItems: 'center',
+									justifyContent: 'flex-end',
+									flex: '0 0 24px', // фиксированная ширина столбика
+									height: '100%',
 								}}
-							/>
-							<Typography
-								variant='caption'
-								color='text.secondary'
-								sx={{ mt: 0.5 }}
 							>
-								{point.dayLabel}
-							</Typography>
-						</Box>
-					)
-				})}
+								<Box
+									sx={{
+										width: '100%',
+										height: `${Math.max(height, 8)}%`,
+										borderRadius: 1,
+										bgcolor: 'success.main',
+										opacity: 0.8,
+										transition: 'height 0.3s ease',
+									}}
+								/>
+								<Typography
+									variant='caption'
+									color='text.secondary'
+									sx={{ mt: 0.5, whiteSpace: 'nowrap' }}
+								>
+									{point.dayLabel}
+								</Typography>
+							</Box>
+						)
+					})}
+				</Box>
 			</Box>
 		</Paper>
 	)

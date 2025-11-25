@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Box, Divider, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 
 import { useStats } from '../features/stats/useStats'
 import { StatsHotkeysHint } from '../features/stats/components/StatsHotkeysHint'
@@ -72,12 +72,6 @@ export const StatsPage: React.FC = () => {
 				decisions={decisions}
 				categories={categories}
 			/>
-
-			<Divider sx={{ mt: 2 }} />
-			<Typography variant='caption' color='text.secondary'>
-				В дальнейшем здесь можно подключить реальные данные из API и добавить
-				фильтрацию по сегментам (тип модерации, платформа, очередь).
-			</Typography>
 		</Box>
 	)
 }
